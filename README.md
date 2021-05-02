@@ -138,7 +138,7 @@ memAdd.set(1, 2)(4);  // Set: 1 + 2 = 4
 ```ts
 import mem, { Options, Fn, MemFn } from "mem-fn";
 
-function mem<A extends any[], T>(
+function mem<F extends Fn<A, T>, A extends any[], T>(
   fn: Fn<A, T>,
   options?: Options<A, T>
 ): MemFn<A, T>;
@@ -160,7 +160,7 @@ type Options<A extends any[], T> = {
   onSet?: (args: A, data: T) => void;
 };
 
-type MemFn<A extends any[], T> = Fn<A, T> & {
+type MemFn<F extends Fn<A, T>, A extends any[], T> = F & {
   clear(...args: A): void;
   clearAll(): void;
   set(...args: A): (value: T) => T;

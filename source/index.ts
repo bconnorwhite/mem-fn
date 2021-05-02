@@ -17,7 +17,7 @@ export type Options<A extends any[], T> = {
   onSet?: (args: A, data: T) => void;
 };
 
-export type MemFn<A extends any[], T> = Fn<A, T> & {
+export type MemFn<F extends Fn<A, T>, A extends any[], T> = F & {
   clear(...args: A): void;
   clearAll(): void;
   set(...args: A): (value: T) => T;
@@ -34,7 +34,7 @@ const defaultCacheKey = <A extends any[]>(...args: A) => {
   return string;
 };
 
-export default function mem<A extends any[], T>(fn: Fn<A, T>, options: Options<A, T> = {}): MemFn<A, T> {
+export default function mem<F extends Fn<A, T>, A extends any[], T>(fn: F, options: Options<A, T> = {}): MemFn<F, A, T> {
   const cache = new Map<string, T>();
   const cacheKeyFn = options.cacheKeyFn ?? defaultCacheKey;
   const timeouts = new Map<string, NodeJS.Timeout>();
@@ -55,14 +55,14 @@ export default function mem<A extends any[], T>(fn: Fn<A, T>, options: Options<A
     }
     return value;
   }
-  const memFn = (...args: A) => {
+  const memFn = ((...args: A) => {
     const key = cacheKeyFn(...args);
     if(cache.has(key)) {
       return cache.get(key) as T;
     } else {
       return set(key, fn(...args));
     }
-  };
+  }) as MemFn<F, A, T>;
   memFn.clear = (...args: A) => {
     const key = cacheKeyFn(...args);
     cache.delete(key);
